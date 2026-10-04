@@ -26,7 +26,7 @@ export function buildJoinUrl(roomId) {
   return url.toString();
 }
 
-const CLIENT_KEY = 'codenames.clientId';
+const CLIENT_KEY = 'cluecrew.clientId';
 
 export function getClientId() {
   try {
@@ -42,7 +42,7 @@ export function getClientId() {
 }
 
 // The big screen keeps its game in sessionStorage so a refresh picks up where it left off.
-const HOST_KEY = 'codenames.host';
+const HOST_KEY = 'cluecrew.host';
 
 export function loadHostSession() {
   try {
@@ -65,7 +65,7 @@ export function saveHostSession({ roomId, game, phonesEnabled }) {
   }
 }
 
-const teamKey = (roomId) => `codenames.team.${roomId}`;
+const teamKey = (roomId) => `cluecrew.team.${roomId}`;
 
 export function loadTeam(roomId) {
   try {

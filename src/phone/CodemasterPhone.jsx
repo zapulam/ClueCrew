@@ -22,7 +22,7 @@ const TOAST_STYLE = {
 function Wordmark({ className = "" }) {
   return (
     <span className={`font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent ${className}`}>
-      CodeNames
+      ClueCrew
     </span>
   );
 }
@@ -363,7 +363,7 @@ export default function CodemasterPhone({ initialRoom }) {
       <Centered>
         <Wordmark className="text-xl" />
         <h1 className="text-2xl font-bold">Codemaster phones aren't set up yet</h1>
-        <p className="text-gray-400">This copy of CodeNames isn't connected to a phone service, so the big screen can't hear taps.</p>
+        <p className="text-gray-400">This copy of ClueCrew isn't connected to a phone service, so the big screen can't hear taps.</p>
         <a href={import.meta.env.BASE_URL} className="text-purple-300 underline underline-offset-4">Open the game</a>
       </Centered>
     );

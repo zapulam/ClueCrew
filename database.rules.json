@@ -6,16 +6,69 @@
       "$roomId": {
         ".read": "$roomId.length === 6 && $roomId.matches(/^[A-HJKMNP-Z2-9]+$/)",
         ".write": "$roomId.length === 6 && $roomId.matches(/^[A-HJKMNP-Z2-9]+$/)",
-        "requests": {
-          "$requestId": {
-            ".validate": "newData.hasChildren(['type', 'team', 'gameId', 'clientId']) && (newData.child('type').val() === 'reveal' || newData.child('type').val() === 'endTurn') && (newData.child('team').val() === 'green' || newData.child('team').val() === 'blue') && newData.child('gameId').isString() && newData.child('gameId').val().length < 64 && (!newData.child('index').exists() || (newData.child('index').isNumber() && newData.child('index').val() >= 0 && newData.child('index').val() < 25))"
-          }
+        "meta": {
+          ".validate": "newData.hasChildren(['v', 'createdAt'])",
+          "v": { ".validate": "newData.isNumber()" },
+          "createdAt": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
+        },
+        "host": {
+          ".validate": "newData.hasChildren(['tabId', 'at'])",
+          "tabId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "at": { ".validate": "newData.isNumber()" },
+          "$other": { ".validate": false }
         },
         "codemasters": {
           "$connectionId": {
-            ".validate": "newData.hasChildren(['team']) && (newData.child('team').val() === 'green' || newData.child('team').val() === 'blue')"
+            ".validate": "$connectionId.length <= 32 && newData.hasChildren(['team', 'clientId', 'at'])",
+            "team": { ".validate": "newData.val() === 'green' || newData.val() === 'blue'" },
+            "clientId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "at": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
           }
-        }
+        },
+        "requests": {
+          "$requestId": {
+            ".validate": "$requestId.length <= 32 && newData.hasChildren(['type', 'team', 'gameId', 'clientId', 'at'])",
+            "type": { ".validate": "newData.val() === 'reveal' || newData.val() === 'endTurn'" },
+            "team": { ".validate": "newData.val() === 'green' || newData.val() === 'blue'" },
+            "gameId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "index": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 24" },
+            "clientId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "at": { ".validate": "newData.isNumber()" },
+            "$other": { ".validate": false }
+          }
+        },
+        "game": {
+          ".validate": "newData.hasChildren(['gameId', 'words', 'roles', 'revealed', 'turn', 'seq'])",
+          "gameId": { ".validate": "newData.isString() && newData.val().length <= 32" },
+          "words": {
+            "$i": { ".validate": "$i.matches(/^(1?[0-9]|2[0-4])$/) && newData.isString() && newData.val().length <= 40" }
+          },
+          "roles": {
+            "$i": { ".validate": "$i.matches(/^(1?[0-9]|2[0-4])$/) && (newData.val() === 'green' || newData.val() === 'blue' || newData.val() === 'neutral' || newData.val() === 'assassin')" }
+          },
+          "revealed": {
+            "$i": { ".validate": "$i.matches(/^(1?[0-9]|2[0-4])$/) && newData.isBoolean()" }
+          },
+          "turn": { ".validate": "newData.val() === 'green' || newData.val() === 'blue'" },
+          "winner": { ".validate": "newData.val() === 'green' || newData.val() === 'blue'" },
+          "endReason": { ".validate": "newData.val() === 'allFound' || newData.val() === 'assassin'" },
+          "seq": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "lastEvent": {
+            ".validate": "newData.hasChildren(['seq', 'type', 'team', 'source'])",
+            "seq": { ".validate": "newData.isNumber()" },
+            "type": { ".validate": "newData.val() === 'reveal' || newData.val() === 'endTurn'" },
+            "index": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 24" },
+            "role": { ".validate": "newData.val() === 'green' || newData.val() === 'blue' || newData.val() === 'neutral' || newData.val() === 'assassin'" },
+            "team": { ".validate": "newData.val() === 'green' || newData.val() === 'blue'" },
+            "outcome": { ".validate": "newData.val() === 'correct' || newData.val() === 'opponent' || newData.val() === 'free' || newData.val() === 'assassin'" },
+            "source": { ".validate": "newData.val() === 'host' || newData.val() === 'phone'" },
+            "$other": { ".validate": false }
+          },
+          "$other": { ".validate": false }
+        },
+        "$other": { ".validate": false }
       }
     }
   }

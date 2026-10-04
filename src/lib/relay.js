@@ -33,7 +33,10 @@ function loadSdk() {
 }
 
 // Writes a presence value now and after every reconnect, and has the server remove it
-// when the connection drops. Returns stop({ keep }) to stop and (unless keep) remove it.
+// when the connection drops. Returns stop(mode) to stop maintaining it:
+//   "remove" (default) cancels the disconnect cleanup and removes the value now,
+//   "keep"   cancels the disconnect cleanup but leaves the value (it may be someone else's),
+//   "detach" leaves both, for when another copy in this tab still relies on them.
 function keepPresent(sdk, path, value) {
   const { db, ref, onValue, onDisconnect, set, remove, serverTimestamp } = sdk;
   const node = ref(db, path);
@@ -45,22 +48,41 @@ function keepPresent(sdk, path, value) {
       .then(() => active && set(node, { ...value, at: serverTimestamp() }))
       .catch(console.error);
   });
-  return ({ keep = false } = {}) => {
+  return (mode = "remove") => {
     if (!active) return;
     active = false;
     unsubscribe();
+    if (mode === "detach") return;
     onDisconnect(node).cancel().catch(() => {});
-    if (!keep) remove(node).catch(() => {});
+    if (mode === "remove") remove(node).catch(() => {});
   };
 }
+
+// How many host connections this tab has open per room. React's development mode opens a
+// second one before closing the first; only the last to close may clear the presence,
+// or a closing copy could wipe the live one's entry (and its disconnect cleanup).
+const openHosts = new Map();
 
 // The big screen. Phone requests are removed as soon as they arrive and handed to
 // onRequest. If another tab takes over the room, this one stops and calls onSuperseded.
 export async function openHostRoom(roomId, { tabId, onRequest, onCodemasters, onSuperseded }) {
-  const sdk = await loadSdk();
-  const { db, ref, set, update, remove, onValue, onChildAdded, onDisconnect, serverTimestamp } = sdk;
+  openHosts.set(roomId, (openHosts.get(roomId) ?? 0) + 1);
+  const release = () => {
+    const remaining = openHosts.get(roomId) - 1;
+    if (remaining > 0) openHosts.set(roomId, remaining);
+    else openHosts.delete(roomId);
+    return remaining;
+  };
+  let sdk;
+  try {
+    sdk = await loadSdk();
+    await sdk.update(sdk.ref(sdk.db, `rooms/${roomId}`), { meta: { v: 1, createdAt: sdk.serverTimestamp() } });
+  } catch (error) {
+    release();
+    throw error;
+  }
+  const { db, ref, set, remove, onValue, onChildAdded, onDisconnect, serverTimestamp } = sdk;
   const room = `rooms/${roomId}`;
-  await update(ref(db, room), { meta: { v: 1, createdAt: serverTimestamp() } });
 
   let closed = false;
   let claimed = false;
@@ -72,7 +94,8 @@ export async function openHostRoom(roomId, { tabId, onRequest, onCodemasters, on
     if (closed) return;
     closed = true;
     unsubscribes.forEach((unsubscribe) => unsubscribe());
-    stopHost({ keep: superseded || retire });
+    const othersOpen = release() > 0;
+    stopHost(superseded || retire ? "keep" : othersOpen ? "detach" : "remove");
     // Retiring a room (New code) deletes it, so phones still on it see "Game not found".
     if (retire) remove(ref(db, room)).catch(console.error);
   };

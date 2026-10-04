@@ -80,7 +80,7 @@ function ScorePills({ counts, activeTeam, compact = false }) {
   );
 }
 
-export default function CodeNames() {
+export default function ClueCrew() {
   const [session] = useState(loadHostSession);
   const [game, dispatch] = useReducer(gameReducer, session.game);
   const [codemasterMode, setCodemasterMode] = useState(false);
@@ -226,7 +226,7 @@ export default function CodeNames() {
           {isHelpOpen && (
             <Modal label="How to play" onClose={() => setIsHelpOpen(false)}>
               <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                How to Play CodeNames
+                How to Play ClueCrew
               </h3>
               <div className="space-y-4 text-sm text-gray-300">
                 <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/50 p-4 rounded-xl border border-blue-700/50">
@@ -327,7 +327,7 @@ export default function CodeNames() {
               >
                 {/* Title */}
                 <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-6 tracking-tight">
-                  CodeNames
+                  ClueCrew
                 </h1>
 
                 {/* Subtitle */}
@@ -433,7 +433,7 @@ export default function CodeNames() {
               <div className="mb-4 bg-gray-900/90 backdrop-blur-xl p-4 shadow-xl border border-gray-700/50 relative z-10 flex-shrink-0">
                 <div className="relative flex items-center justify-between w-full">
                   <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex-shrink-0">
-                    CodeNames
+                    ClueCrew
                   </h2>
                   {/* Turn and progress - large screens, centered in header */}
                   <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-4">

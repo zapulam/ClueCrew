@@ -1,14 +1,14 @@
 # ClueCrew
 
-A modern, interactive web implementation of the popular word association game CodeNames, built with React, Tailwind CSS, and Framer Motion.
+ClueCrew is a modern, interactive team word-association game inspired by Codenames, built with React, Tailwind CSS, and Framer Motion.
 
 Play for free [here](https://zapulam.github.io/ClueCrew).
 
-![CodeNames Game](https://img.shields.io/badge/React-19.0.0-blue) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0.6-38B2AC) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.4.1-purple)
+![React](https://img.shields.io/badge/React-19.0.0-blue) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0.6-38B2AC) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.4.1-purple)
 
 ## 🎮 Game Overview
 
-CodeNames is a team-based word association game where players work together to identify their team's words while avoiding the opponent's words and the deadly assassin. This digital version features a sleek, modern interface with smooth animations and intuitive controls.
+ClueCrew is a team-based word association game where players work together to identify their team's words while avoiding the opponent's words and the deadly assassin. This digital version features a sleek, modern interface with smooth animations and intuitive controls.
 
 ## ✨ Features
 
@@ -110,9 +110,9 @@ Firebase is only downloaded once someone clicks **Connect codemaster phones**. W
 2. Open **Build → Realtime Database → Create Database**, pick a location, and choose **Start in locked mode**.
 3. In the **Rules** tab, replace everything with the contents of [`database.rules.json`](database.rules.json) and click **Publish**.
 4. Copy the **database URL** (top of the Data tab) and the **project ID** (Project settings → General) into `src/lib/firebaseConfig.js`.
-5. Build and deploy as usual.
+5. Merge into `main`, which deploys the site.
 
-These two values are public identifiers, not secrets: the rules decide what anyone can read or write. They keep the database root private, so rooms can't be listed, and they only accept valid room codes and well-formed requests. Anyone holding a room's code can see that game's key, which is why the QR code shouldn't be left on screen.
+These two values are public identifiers, not secrets: the rules decide what anyone can read or write. They keep the database root private, so rooms can't be listed, they only accept valid room codes, and inside a room they only accept data shaped exactly like the game's (no extra fields, checked values, capped lengths). Anyone holding a room's code can see that game's key, which is why the QR code shouldn't be left on screen.
 
 The free plan allows 100 simultaneous connections (about 33 games at once) and 1 GB of storage. Each room takes about 2 KB.
 
@@ -121,7 +121,7 @@ The free plan allows 100 simultaneous connections (about 33 games at once) and 1
 You don't need a Firebase project to try the phone feature locally:
 
 ```bash
-npx firebase-tools emulators:start --only database --project demo-codenames   # needs Java
+npx firebase-tools emulators:start --only database --project demo-cluecrew   # needs Java
 VITE_FIREBASE_EMULATOR=9000 npm run dev -- --host
 ```
 
@@ -136,9 +136,10 @@ Open the board at the **Network** address Vite prints (not `localhost`), then sc
 - `npm run lint`: Run ESLint
 
 ## Deployment
-- `npm install`: Install dependencies (run again after pulling changes that add packages)
-- `npm run build`: Build for production
-- `npm run deploy`: Deploy to Github pages
+
+Merging into `main` deploys the site automatically. A GitHub Actions workflow (`.github/workflows/deploy.yml`) installs, lints, builds and publishes it to GitHub Pages. Pull requests get the same lint and build check, without publishing.
+
+One-time setup: in the repo's **Settings → Pages → Build and deployment**, set **Source** to **GitHub Actions**.
 
 ## 🤝 Contributing
 

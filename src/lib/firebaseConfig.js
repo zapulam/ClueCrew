@@ -17,7 +17,7 @@ export const emulatorHost = !emulator
     : `${window.location.hostname}:${emulator}`;
 
 export const activeFirebaseConfig = emulatorHost
-  ? { projectId: "demo-codenames", databaseURL: "https://demo-codenames-default-rtdb.firebaseio.com" }
+  ? { projectId: "demo-cluecrew", databaseURL: "https://demo-cluecrew-default-rtdb.firebaseio.com" }
   : firebaseConfig;
 
 export const relayConfigured = Boolean(activeFirebaseConfig.projectId && activeFirebaseConfig.databaseURL);
