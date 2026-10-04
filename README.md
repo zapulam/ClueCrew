@@ -1,8 +1,8 @@
-# CodeNames 3.0
+# ClueCrew
 
 A modern, interactive web implementation of the popular word association game CodeNames, built with React, Tailwind CSS, and Framer Motion.
 
-Play for free [here](https://zapulam.github.io/CodeNames3.0).
+Play for free [here](https://zapulam.github.io/ClueCrew).
 
 ![CodeNames Game](https://img.shields.io/badge/React-19.0.0-blue) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0.6-38B2AC) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.4.1-purple)
 
@@ -36,7 +36,7 @@ CodeNames is a team-based word association game where players work together to i
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd CodeNames3.0
+   cd ClueCrew
    ```
 
 2. **Install dependencies**
@@ -154,4 +154,4 @@ If you encounter any issues or have questions, please open an issue on the GitHu
 
 ---
 
-**Enjoy playing CodeNames 3.0! 🎉**
+**Enjoy playing ClueCrew! 🎉**

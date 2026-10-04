@@ -1,9 +1,9 @@
 {
-  "name": "codenames3",
+  "name": "cluecrew",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://zapulam.github.io/CodeNames3.0",
+  "homepage": "https://zapulam.github.io/ClueCrew",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
