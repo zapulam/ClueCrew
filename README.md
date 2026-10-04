@@ -112,7 +112,7 @@ Firebase is only downloaded once someone clicks **Connect codemaster phones**. W
 4. Copy the **database URL** (top of the Data tab) and the **project ID** (Project settings → General) into `src/lib/firebaseConfig.js`.
 5. Build and deploy as usual.
 
-These two values are public identifiers, not secrets: the rules decide what anyone can read or write. They keep the database root private, so rooms can't be listed, and they only accept valid room codes and well-formed requests. Anyone holding a room's code can see that game's key, which is why the QR code shouldn't be left on screen.
+These two values are public identifiers, not secrets: the rules decide what anyone can read or write. They keep the database root private, so rooms can't be listed, they only accept valid room codes, and inside a room they only accept data shaped exactly like the game's (no extra fields, checked values, capped lengths). Anyone holding a room's code can see that game's key, which is why the QR code shouldn't be left on screen.
 
 The free plan allows 100 simultaneous connections (about 33 games at once) and 1 GB of storage. Each room takes about 2 KB.
 
