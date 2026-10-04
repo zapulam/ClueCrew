@@ -2,8 +2,8 @@
 // phone taps. They are not secrets: database.rules.json controls access.
 // While they are empty, the codemaster phone feature stays hidden.
 export const firebaseConfig = {
-  projectId: "",
-  databaseURL: "",
+  projectId: "cluecrew-c74bd",
+  databaseURL: "https://cluecrew-c74bd-default-rtdb.firebaseio.com",
 };
 
 // Local testing against the Firebase emulator (dev server only). Set VITE_FIREBASE_EMULATOR
