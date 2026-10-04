@@ -7,7 +7,7 @@ export function GameGrid({ words, revealed, roles, onReveal, codemasterMode }) {
     }
   };
 
-  const getCardStyle = (role, isRevealed, index) => {
+  const getCardStyle = (role, isRevealed) => {
     // Base button style - minHeight and fontSize overridden by className for responsive
     let buttonStyle = {
       display: 'flex',
@@ -80,7 +80,7 @@ export function GameGrid({ words, revealed, roles, onReveal, codemasterMode }) {
               e.stopPropagation();
               handleCardClick(idx);
             }}
-            style={getCardStyle(cardRole, isRevealed, idx)}
+            style={getCardStyle(cardRole, isRevealed)}
             className={`min-h-[10vh] md:min-h-[14vh] text-xs md:text-base font-medium md:font-bold tracking-tight md:tracking-normal ${!isRevealed && !codemasterMode ? 'bg-[#fef3c7] hover:bg-[#fde68a]' : ''}`}
           >
             <span className="text-center" style={{ lineHeight: '1.2' }}>
