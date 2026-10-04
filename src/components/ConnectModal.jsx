@@ -28,23 +28,26 @@ function StatusRow({ team, count }) {
   );
 }
 
-export default function ConnectModal({ roomId, status, codemasters, onNewCode, onRetry, onClose }) {
+export default function ConnectModal({ roomId, status, codemasters, onNewCode, onRetry, onClose, startsGame = false }) {
   const url = buildJoinUrl(roomId);
   const [copied, setCopied] = useState(false);
   const [autoClosing, setAutoClosing] = useState(false);
   const bothConnected = codemasters.green > 0 && codemasters.blue > 0;
 
   // Close by itself once the second codemaster joins, so the QR code isn't left up for guessers.
+  // startsGame flips to false as soon as that game starts, so remember it from the moment of joining.
   const onCloseRef = useRef(onClose);
+  const startsGameRef = useRef(startsGame);
   useEffect(() => {
     onCloseRef.current = onClose;
+    startsGameRef.current = startsGame;
   });
   const wasBothConnected = useRef(bothConnected);
   useEffect(() => {
     const justJoined = bothConnected && !wasBothConnected.current;
     wasBothConnected.current = bothConnected;
     if (!justJoined) return;
-    setAutoClosing(true);
+    setAutoClosing(startsGameRef.current ? "starting" : "closing");
     const timer = setTimeout(() => onCloseRef.current(), 1600);
     return () => clearTimeout(timer);
   }, [bothConnected]);
@@ -61,7 +64,7 @@ export default function ConnectModal({ roomId, status, codemasters, onNewCode, o
         Connect codemaster phones
       </h2>
       <p className="mt-1 text-gray-400 md:text-lg">
-        Each codemaster scans this and picks their team. Close it before the guessers can scan it too.
+        Each codemaster scans this and picks their team.{startsGame && " The game starts as soon as both have joined."} Close it before the guessers can scan it too.
       </p>
 
       <div className="mt-6 grid gap-6 md:grid-cols-[280px_minmax(0,1fr)] md:gap-8 items-center">
@@ -106,7 +109,9 @@ export default function ConnectModal({ roomId, status, codemasters, onNewCode, o
             </p>
           )}
           {autoClosing && bothConnected && (
-            <p className="mt-3 text-sm text-green-300">Both codemasters are connected. Closing…</p>
+            <p className="mt-3 text-sm text-green-300">
+              Both codemasters are connected. {autoClosing === "starting" ? "Starting the game…" : "Closing…"}
+            </p>
           )}
         </div>
       </div>
