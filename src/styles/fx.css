@@ -107,7 +107,15 @@ body {
 .cn-sheet { animation: cn-sheet-up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
 .cn-toast { animation: cn-toast-in 0.3s ease-out; }
 
+/* Turn dot on the phone: glows in the team's color (set via --glow) on their turn. */
+@keyframes cn-glow {
+  0%, 100% { box-shadow: 0 0 6px 2px var(--glow); }
+  50% { box-shadow: 0 0 16px 6px var(--glow); }
+}
+.cn-turn-dot { box-shadow: 0 0 10px 3px var(--glow); animation: cn-glow 1.6s ease-in-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
+  .cn-turn-dot { animation: none; }
   .cn-sheet,
   .cn-toast { animation: cn-fade-in 0.2s ease-out; }
   .cn-card-flip,

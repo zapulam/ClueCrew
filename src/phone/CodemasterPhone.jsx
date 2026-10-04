@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ChevronDown, SkipForward } from "lucide-react";
+import { SkipForward } from "lucide-react";
 import { usePhoneRelay } from "../hooks/usePhoneRelay";
 import { relayConfigured } from "../lib/firebaseConfig";
 import { otherTeam, outcomeFor } from "../lib/game";
@@ -78,7 +78,7 @@ function NotFound({ roomId }) {
   );
 }
 
-function TeamPicker({ roomId, onPick }) {
+function TeamPicker({ roomId, current, onPick, onCancel }) {
   return (
     <Centered>
       <Wordmark className="text-xl" />
@@ -101,6 +101,11 @@ function TeamPicker({ roomId, onPick }) {
         </button>
       </div>
       <p className="text-gray-400 text-[14.5px]">Keep this screen away from your team. It shows every word's color.</p>
+      {onCancel && (
+        <button onClick={onCancel} className="text-sm text-gray-400 underline underline-offset-4 cursor-pointer">
+          Stay on {TEAM_NAME[current]} Team
+        </button>
+      )}
     </Centered>
   );
 }
@@ -222,11 +227,13 @@ function PhoneRoom({ roomId }) {
     return (
       <TeamPicker
         roomId={roomId}
+        current={team}
         onPick={(picked) => {
           saveTeam(roomId, picked);
           setTeam(picked);
           setPickingTeam(false);
         }}
+        onCancel={team ? () => setPickingTeam(false) : null}
       />
     );
   }
@@ -235,10 +242,10 @@ function PhoneRoom({ roomId }) {
     return (
       <Centered>
         <div className="w-10 h-10 rounded-full border-4 border-gray-700 border-t-purple-400 animate-spin" aria-hidden="true" />
-        <h1 className="text-2xl font-bold">Waiting for the big screen</h1>
-        <p className="text-gray-400">Your words show up here as soon as a game starts. Room {roomId}.</p>
+        <h1 className="text-2xl font-bold">Waiting for the game to start</h1>
+        <p className="text-gray-400">It starts as soon as both codemasters have joined. Room {roomId}.</p>
         <button onClick={() => setPickingTeam(true)} className="text-sm text-gray-400 underline underline-offset-4 cursor-pointer">
-          You're on {TEAM_NAME[team]} Team. Change team
+          You're on {TEAM_NAME[team]} Team. Switch team
         </button>
       </Centered>
     );
@@ -269,40 +276,42 @@ function PhoneRoom({ roomId }) {
     setPending({ key, type: "endTurn", gameId: game.gameId });
   };
 
-  let banner;
-  if (game.winner) {
-    const hitBy = game.endReason === "assassin" ? `${TEAM_NAME[otherTeam(game.winner)]} hit the assassin. ` : "";
-    banner = { style: "bg-gray-800/90 border border-gray-700/60 text-gray-100", text: `${hitBy}${TEAM_NAME[game.winner]} wins. Waiting for a new game.` };
-  } else if (!hostOnline) {
-    banner = { style: "bg-red-900/60 border border-red-500/40 text-red-100", text: "The big screen is offline. Taps are paused until it's back." };
-  } else if (myTurn) {
-    banner = { style: `${team === "green" ? "bg-green-700" : "bg-blue-600"} text-white`, text: "Your turn. Tap a word when your team guesses it.", pulse: true };
-  } else {
-    banner = { style: "bg-gray-800/90 border border-gray-700/60 text-gray-400", text: `${TEAM_NAME[theirs]}'s turn. You can look, but taps won't count.` };
-  }
+  const turnLabel = game.winner
+    ? "Game over"
+    : !hostOnline
+      ? "Big screen offline"
+      : myTurn
+        ? "Your turn"
+        : `${TEAM_NAME[game.turn]}'s turn`;
+  const hitBy = game.endReason === "assassin" ? `${TEAM_NAME[otherTeam(game.winner)]} hit the assassin. ` : "";
 
   return (
     <main className="min-h-dvh bg-gray-900 text-gray-100 select-none [touch-action:manipulation] [-webkit-touch-callout:none]">
       <div className="max-w-md mx-auto">
-        <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/50 px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-3 grid gap-2.5">
-          <div className="flex items-center justify-between">
+        <header className="sticky top-0 z-10 bg-gray-900/95 backdrop-blur-md border-b border-gray-700/50 px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-3">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <Wordmark className="text-lg" />
-            <span className="font-mono text-xs text-gray-400 px-2 py-0.5 rounded-md border border-gray-700 tracking-[0.08em]">{roomId}</span>
+            {/* Glows in your team's color on your turn, grey otherwise. */}
+            <span
+              role="img"
+              aria-label={turnLabel}
+              title={turnLabel}
+              className={`block w-4 h-4 rounded-full transition-colors ${
+                myTurn && hostOnline
+                  ? `cn-turn-dot ${team === "green" ? "bg-green-500 [--glow:rgba(34,197,94,0.75)]" : "bg-blue-500 [--glow:rgba(59,130,246,0.75)]"}`
+                  : "bg-gray-600"
+              }`}
+            />
+            <button
+              onClick={() => setPickingTeam(true)}
+              className="justify-self-end px-2.5 py-1 rounded-lg border border-gray-700 text-xs font-semibold text-gray-300 hover:bg-gray-800 cursor-pointer"
+            >
+              Switch team
+            </button>
           </div>
-          <button
-            onClick={() => setPickingTeam(true)}
-            className={`justify-self-start inline-flex items-center gap-2 pl-3 pr-2.5 py-1.5 rounded-xl border font-bold text-[15px] cursor-pointer ${
-              team === "green" ? "text-green-200 border-green-500/40 bg-green-500/15" : "text-blue-200 border-blue-500/45 bg-blue-500/15"
-            }`}
-          >
-            <span className={`w-2.5 h-2.5 rounded-full ${team === "green" ? "bg-green-500" : "bg-blue-500"}`} />
-            {TEAM_NAME[team]} Team
-            <ChevronDown size={16} className="opacity-70" />
-          </button>
-          <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold leading-snug ${banner.style}`} role="status">
-            <span className={`w-2 h-2 rounded-full bg-current flex-shrink-0 ${banner.pulse ? "animate-pulse" : ""}`} />
-            {banner.text}
-          </div>
+          {!hostOnline && !game.winner && (
+            <p className="mt-2 text-center text-xs font-semibold text-red-200">The big screen is offline. Taps are paused.</p>
+          )}
         </header>
 
         <div className="px-3.5 pt-4 pb-32">
@@ -313,7 +322,9 @@ function PhoneRoom({ roomId }) {
       <div className="fixed inset-x-0 bottom-0 z-10 bg-gradient-to-t from-gray-900 from-70% to-transparent px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
         <div className="max-w-md mx-auto">
           {game.winner ? (
-            <p className="text-center text-sm text-gray-400 py-3.5">Game over. Start a new game on the big screen.</p>
+            <p className="text-center text-sm text-gray-400 py-3.5">
+              {hitBy}{TEAM_NAME[game.winner]} wins. Start a new game on the big screen.
+            </p>
           ) : myTurn ? (
             <button
               onClick={endTurn}

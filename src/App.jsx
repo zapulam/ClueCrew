@@ -35,26 +35,28 @@ function TurnControls({ game, onEndTurn }) {
   const glow = game.turn === "green"
     ? "bg-green-600 shadow-[0_0_24px_rgba(34,197,94,0.35)]"
     : "bg-blue-600 shadow-[0_0_24px_rgba(59,130,246,0.35)]";
+  // One pill: whose turn it is, with End turn as a darker segment on its right.
   return (
-    <div className="flex items-center gap-2">
-      <motion.span
-        key={game.turn}
-        initial={{ y: -8, scale: 0.85, opacity: 0 }}
-        animate={{ y: 0, scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 500, damping: 22 }}
-        className={`inline-flex items-center gap-2 pl-3 pr-4 py-1.5 rounded-full font-bold text-white whitespace-nowrap ${glow}`}
-      >
+    <motion.div
+      key={game.turn}
+      initial={{ y: -8, scale: 0.85, opacity: 0 }}
+      animate={{ y: 0, scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 500, damping: 22 }}
+      className={`inline-flex items-stretch rounded-full overflow-hidden font-bold text-white whitespace-nowrap ${glow}`}
+    >
+      <span className="inline-flex items-center gap-2 pl-3 pr-3 py-1.5">
         <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
         {TEAM_NAME[game.turn]}'s turn
-      </motion.span>
+      </span>
       <button
         onClick={onEndTurn}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-700 text-gray-100 text-sm font-semibold hover:bg-gray-700/50 transition-colors cursor-pointer whitespace-nowrap"
+        title={`End ${TEAM_NAME[game.turn]}'s turn`}
+        className="inline-flex items-center gap-1.5 pl-2.5 pr-3.5 border-l border-white/25 bg-black/15 hover:bg-black/30 text-sm font-semibold transition-colors cursor-pointer"
       >
-        <SkipForward size={15} />
+        <SkipForward size={14} />
         End turn
       </button>
-    </div>
+    </motion.div>
   );
 }
 
@@ -138,6 +140,12 @@ export default function ClueCrew() {
     setDismissedWinFor(null);
   };
 
+  // With codemaster phones, the game starts by itself once both codemasters have joined.
+  const bothCodemastersJoined = phonesEnabled && relay.codemasters.green > 0 && relay.codemasters.blue > 0;
+  useEffect(() => {
+    if (bothCodemastersJoined && !game) dispatch({ type: "newGame", game: createGame(WORD_POOL) });
+  }, [bothCodemastersJoined, game]);
+
   // Show confirmation before starting a new game if one is in progress
   const confirmAndStartNewGame = () => {
     if (game) {
@@ -198,6 +206,7 @@ export default function ClueCrew() {
                 onNewCode={newRoomCode}
                 onRetry={relay.retry}
                 onClose={closeConnect}
+                startsGame={!game}
               />
             </Suspense>
           )}
@@ -387,6 +396,13 @@ export default function ClueCrew() {
                       <Smartphone size={18} />
                       Connect codemaster phones
                     </button>
+                    {phonesEnabled && (
+                      <p className="flex items-center gap-2 text-sm text-gray-400">
+                        <span className={`w-2.5 h-2.5 rounded-full ${relay.codemasters.green > 0 ? "bg-green-500" : "bg-gray-600"}`} />
+                        <span className={`w-2.5 h-2.5 rounded-full ${relay.codemasters.blue > 0 ? "bg-blue-500" : "bg-gray-600"}`} />
+                        The game starts when both codemasters have joined.
+                      </p>
+                    )}
                     {showJoin ? (
                       <form onSubmit={joinAsCodemaster} className="flex gap-2">
                         <input

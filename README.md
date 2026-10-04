@@ -92,8 +92,8 @@ npm run preview
 Instead of peeking at the shared screen, each team's codemaster can use their own phone:
 
 1. On the big screen, click **Connect codemaster phones** (on the start screen or the phone button in the header). A QR code and a 6-letter room code appear.
-2. Each codemaster scans the QR code (or opens the site and types the code) and picks their team.
-3. The phone lists every word grouped by color: your team first, then the other team, Free, and Assassin.
+2. Each codemaster scans the QR code (or opens the site and types the code) and picks their team. Once both have joined, the game starts by itself.
+3. The phone lists every word grouped by color: your team first, then the other team, Free, and Assassin. The dot at the top glows in your team's color on your turn and is grey otherwise. **Switch team** changes teams.
 4. When your team guesses a word out loud, tap it and confirm. The big screen reveals the card and plays the animation. Taps only count on your team's turn, and **End turn** passes the turn.
 
 The popup closes itself once both codemasters have joined, so guessers can't scan it. **New code** disconnects everyone and shows a fresh code. New games reuse the same room, so nobody needs to rescan between games.
