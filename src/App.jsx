@@ -107,8 +107,16 @@ export default function ClueCrew() {
     setIsConnectOpen(true);
   };
   const closeConnect = useCallback(() => setIsConnectOpen(false), []);
-  // A fresh code disconnects everyone on the old one (the old room is deleted).
-  const newRoomCode = () => setRoomId(generateRoomId());
+  // A fresh code starts over: it ends the current game (someone may have seen its key) and
+  // disconnects everyone on the old code (that room is deleted). The next game starts by
+  // itself once both codemasters have joined the new code.
+  const newRoomCode = () => {
+    dispatch({ type: "clear" });
+    setCodemasterMode(false);
+    setDismissedWinFor(null);
+    setRoomId(generateRoomId());
+  };
+  const gameInProgress = Boolean(game) && !game.winner && game.revealed.some(Boolean);
 
   const joinAsCodemaster = (e) => {
     e.preventDefault();
@@ -207,6 +215,7 @@ export default function ClueCrew() {
                 onRetry={relay.retry}
                 onClose={closeConnect}
                 startsGame={!game}
+                gameInProgress={gameInProgress}
               />
             </Suspense>
           )}
