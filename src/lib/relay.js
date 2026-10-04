@@ -58,7 +58,7 @@ function keepPresent(sdk, path, value) {
 // onRequest. If another tab takes over the room, this one stops and calls onSuperseded.
 export async function openHostRoom(roomId, { tabId, onRequest, onCodemasters, onSuperseded }) {
   const sdk = await loadSdk();
-  const { db, ref, set, update, remove, onValue, onChildAdded, serverTimestamp } = sdk;
+  const { db, ref, set, update, remove, onValue, onChildAdded, onDisconnect, serverTimestamp } = sdk;
   const room = `rooms/${roomId}`;
   await update(ref(db, room), { meta: { v: 1, createdAt: serverTimestamp() } });
 
@@ -84,8 +84,14 @@ export async function openHostRoom(roomId, { tabId, onRequest, onCodemasters, on
       if (host?.tabId === tabId) {
         claimed = true;
       } else if (!host) {
-        // A previous page load's disconnect cleanup can land after we claimed: reclaim.
-        if (claimed && !closed) set(hostRef, { tabId, at: serverTimestamp() }).catch(console.error);
+        // An earlier connection's cleanup can land after we claimed (a reload, or a quick
+        // close and reopen in this tab, which may also cancel our disconnect hook): reclaim.
+        if (claimed && !closed) {
+          onDisconnect(hostRef)
+            .remove()
+            .then(() => !closed && set(hostRef, { tabId, at: serverTimestamp() }))
+            .catch(console.error);
+        }
       } else if (claimed && !closed) {
         superseded = true;
         close();
