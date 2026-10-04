@@ -1,0 +1,22 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$roomId": {
+        ".read": "$roomId.length === 6 && $roomId.matches(/^[A-HJKMNP-Z2-9]+$/)",
+        ".write": "$roomId.length === 6 && $roomId.matches(/^[A-HJKMNP-Z2-9]+$/)",
+        "requests": {
+          "$requestId": {
+            ".validate": "newData.hasChildren(['type', 'team', 'gameId', 'clientId']) && (newData.child('type').val() === 'reveal' || newData.child('type').val() === 'endTurn') && (newData.child('team').val() === 'green' || newData.child('team').val() === 'blue') && newData.child('gameId').isString() && newData.child('gameId').val().length < 64 && (!newData.child('index').exists() || (newData.child('index').isNumber() && newData.child('index').val() >= 0 && newData.child('index').val() < 25))"
+          }
+        },
+        "codemasters": {
+          "$connectionId": {
+            ".validate": "newData.hasChildren(['team']) && (newData.child('team').val() === 'green' || newData.child('team').val() === 'blue')"
+          }
+        }
+      }
+    }
+  }
+}
