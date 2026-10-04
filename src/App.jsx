@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { GameGrid } from "./components/Gamegrid";
 import { Modal } from "./components/Modal";
@@ -10,10 +10,16 @@ import {
   EyeOff,
   MessageCircleQuestion,
   SkipForward,
+  Smartphone,
 } from "lucide-react";
 import { createGame, gameReducer, getCounts, otherTeam, parseWordList, TOTALS } from "./lib/game";
-import { loadHostSession, saveHostSession } from "./lib/room";
+import { generateRoomId, loadHostSession, normalizeRoomId, saveHostSession } from "./lib/room";
+import { relayConfigured } from "./lib/firebaseConfig";
+import { useHostRelay } from "./hooks/useHostRelay";
 import wordsContent from './data/words.txt?raw';
+
+// Loaded on first use so the QR code library stays out of the main bundle.
+const ConnectModal = lazy(() => import("./components/ConnectModal"));
 
 const WORD_POOL = parseWordList(wordsContent);
 const TEAM_NAME = { green: "Green", blue: "Blue" };
@@ -82,10 +88,31 @@ export default function CodeNames() {
   const [showNewGameConfirm, setShowNewGameConfirm] = useState(false);
   const [showMobileRecommendModal, setShowMobileRecommendModal] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [roomId, setRoomId] = useState(session.roomId);
+  const [phonesEnabled, setPhonesEnabled] = useState(relayConfigured && session.phonesEnabled && Boolean(session.roomId));
+  const [isConnectOpen, setIsConnectOpen] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
+  const [joinCode, setJoinCode] = useState("");
+  const relay = useHostRelay({ enabled: phonesEnabled, roomId, game, dispatch });
 
   useEffect(() => {
-    saveHostSession({ roomId: session.roomId, game, phonesEnabled: session.phonesEnabled });
-  }, [session, game]);
+    saveHostSession({ roomId, game, phonesEnabled });
+  }, [roomId, game, phonesEnabled]);
+
+  const openConnect = () => {
+    if (!roomId) setRoomId(generateRoomId());
+    setPhonesEnabled(true);
+    setIsConnectOpen(true);
+  };
+  const closeConnect = useCallback(() => setIsConnectOpen(false), []);
+  // A fresh code disconnects everyone on the old one (the old room is deleted).
+  const newRoomCode = () => setRoomId(generateRoomId());
+
+  const joinAsCodemaster = (e) => {
+    e.preventDefault();
+    const code = normalizeRoomId(joinCode);
+    if (code) window.location.search = `?room=${code}`;
+  };
 
   // Animate each new reveal or End Turn exactly once. Starting from the restored
   // event means a refresh doesn't replay the last animation.
@@ -161,6 +188,40 @@ export default function CodeNames() {
             </Modal>
           )}
 
+          {/* Connect Codemaster Phones Modal */}
+          {isConnectOpen && roomId && (
+            <Suspense fallback={null}>
+              <ConnectModal
+                roomId={roomId}
+                status={relay.status}
+                codemasters={relay.codemasters}
+                onNewCode={newRoomCode}
+                onRetry={relay.retry}
+                onClose={closeConnect}
+              />
+            </Suspense>
+          )}
+
+          {/* Another tab took over the phone room */}
+          {relay.status === "superseded" && (
+            <Modal label="Game open in another tab" onClose={() => setPhonesEnabled(false)} className="flex flex-col items-center text-center">
+              <h2 className="text-2xl font-bold mb-3 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                Phones moved to another tab
+              </h2>
+              <p className="text-gray-300 mb-8">
+                This game was opened in another tab, so the codemaster phones are talking to that one now.
+              </p>
+              <div className="flex flex-wrap justify-center gap-4">
+                <button onClick={relay.retry} className={primaryButton}>
+                  Use this tab
+                </button>
+                <button onClick={() => setPhonesEnabled(false)} className={secondaryButton}>
+                  Keep the other tab
+                </button>
+              </div>
+            </Modal>
+          )}
+
           {/* Help Modal */}
           {isHelpOpen && (
             <Modal label="How to play" onClose={() => setIsHelpOpen(false)}>
@@ -198,6 +259,11 @@ export default function CodeNames() {
                   <p className="font-semibold text-green-200 mb-2">Views:</p>
                   <p className="text-green-300"><strong>Codemaster View:</strong> Sees everything.</p>
                   <p className="text-green-300"><strong>Player View:</strong> Sees only revealed words.</p>
+                  {relayConfigured && (
+                    <p className="text-green-300 mt-2">
+                      <strong>Codemaster phones:</strong> each codemaster scans the code from the phone button, sees their words on their phone, and taps the word their team guesses.
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex justify-center mt-8">
@@ -312,6 +378,44 @@ export default function CodeNames() {
                   </span>
                 </button>
 
+                {relayConfigured && (
+                  <div className="mt-5 flex flex-col items-center gap-3">
+                    <button
+                      onClick={openConnect}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-pink-500/40 text-pink-300 hover:bg-pink-900/20 font-semibold transition-colors cursor-pointer"
+                    >
+                      <Smartphone size={18} />
+                      Connect codemaster phones
+                    </button>
+                    {showJoin ? (
+                      <form onSubmit={joinAsCodemaster} className="flex gap-2">
+                        <input
+                          id="join-code"
+                          value={joinCode}
+                          onChange={(e) => setJoinCode(e.target.value)}
+                          maxLength={6}
+                          autoComplete="off"
+                          autoCapitalize="characters"
+                          aria-label="Room code"
+                          placeholder="CODE"
+                          className="w-36 h-11 rounded-xl border border-gray-600 bg-gray-900 text-center font-mono font-bold tracking-[0.14em] uppercase text-gray-100 placeholder:text-gray-600"
+                        />
+                        <button
+                          type="submit"
+                          disabled={!normalizeRoomId(joinCode)}
+                          className="h-11 px-4 rounded-xl bg-gray-700 hover:bg-gray-600 font-semibold text-gray-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+                        >
+                          Join
+                        </button>
+                      </form>
+                    ) : (
+                      <button onClick={() => setShowJoin(true)} className="text-sm text-gray-400 hover:text-gray-200 underline underline-offset-4 cursor-pointer">
+                        Codemaster with a room code? Join here
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 {/* Footer text */}
                 <p className="text-xs text-gray-400 mt-6">
                   Use the header buttons to toggle codemaster view and access game controls
@@ -339,6 +443,25 @@ export default function CodeNames() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                    {relayConfigured && (
+                      <button
+                        onClick={openConnect}
+                        title="Connect codemaster phones"
+                        aria-label={`Connect codemaster phones (${(relay.codemasters.green > 0) + (relay.codemasters.blue > 0)} of 2 connected)`}
+                        className="group relative p-2 text-pink-400 hover:text-pink-300 hover:bg-pink-900/30 rounded-xl transition-all duration-200 w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md transform hover:scale-105 active:scale-95 border border-pink-600/30 hover:border-pink-500/50 cursor-pointer"
+                      >
+                        <Smartphone size={18} />
+                        {phonesEnabled && (
+                          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 flex gap-0.5 px-1 py-0.5 rounded-full bg-gray-900 border border-gray-700">
+                            <span className={`w-1.5 h-1.5 rounded-full ${relay.codemasters.green > 0 ? "bg-green-500" : "bg-gray-600"}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${relay.codemasters.blue > 0 ? "bg-blue-500" : "bg-gray-600"}`} />
+                          </span>
+                        )}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-gray-900 text-gray-100 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap border border-gray-700/50 shadow-lg">
+                          Codemaster phones
+                        </div>
+                      </button>
+                    )}
                     <button
                       onClick={confirmAndStartNewGame}
                       title="Start New Game"
