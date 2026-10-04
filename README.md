@@ -110,7 +110,7 @@ Firebase is only downloaded once someone clicks **Connect codemaster phones**. W
 2. Open **Build → Realtime Database → Create Database**, pick a location, and choose **Start in locked mode**.
 3. In the **Rules** tab, replace everything with the contents of [`database.rules.json`](database.rules.json) and click **Publish**.
 4. Copy the **database URL** (top of the Data tab) and the **project ID** (Project settings → General) into `src/lib/firebaseConfig.js`.
-5. Build and deploy as usual.
+5. Merge into `main`, which deploys the site.
 
 These two values are public identifiers, not secrets: the rules decide what anyone can read or write. They keep the database root private, so rooms can't be listed, they only accept valid room codes, and inside a room they only accept data shaped exactly like the game's (no extra fields, checked values, capped lengths). Anyone holding a room's code can see that game's key, which is why the QR code shouldn't be left on screen.
 
@@ -136,9 +136,10 @@ Open the board at the **Network** address Vite prints (not `localhost`), then sc
 - `npm run lint`: Run ESLint
 
 ## Deployment
-- `npm install`: Install dependencies (run again after pulling changes that add packages)
-- `npm run build`: Build for production
-- `npm run deploy`: Deploy to Github pages
+
+Merging into `main` deploys the site automatically. A GitHub Actions workflow (`.github/workflows/deploy.yml`) installs, lints, builds and publishes it to GitHub Pages. Pull requests get the same lint and build check, without publishing.
+
+One-time setup: in the repo's **Settings → Pages → Build and deployment**, set **Source** to **GitHub Actions**.
 
 ## 🤝 Contributing
 
