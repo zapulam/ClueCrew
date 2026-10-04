@@ -1,14 +1,14 @@
 # ClueCrew
 
-A modern, interactive web implementation of the popular word association game CodeNames, built with React, Tailwind CSS, and Framer Motion.
+ClueCrew is a modern, interactive team word-association game inspired by Codenames, built with React, Tailwind CSS, and Framer Motion.
 
 Play for free [here](https://zapulam.github.io/ClueCrew).
 
-![CodeNames Game](https://img.shields.io/badge/React-19.0.0-blue) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0.6-38B2AC) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.4.1-purple)
+![React](https://img.shields.io/badge/React-19.0.0-blue) ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0.6-38B2AC) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.4.1-purple)
 
 ## 🎮 Game Overview
 
-CodeNames is a team-based word association game where players work together to identify their team's words while avoiding the opponent's words and the deadly assassin. This digital version features a sleek, modern interface with smooth animations and intuitive controls.
+ClueCrew is a team-based word association game where players work together to identify their team's words while avoiding the opponent's words and the deadly assassin. This digital version features a sleek, modern interface with smooth animations and intuitive controls.
 
 ## ✨ Features
 
@@ -121,7 +121,7 @@ The free plan allows 100 simultaneous connections (about 33 games at once) and 1
 You don't need a Firebase project to try the phone feature locally:
 
 ```bash
-npx firebase-tools emulators:start --only database --project demo-codenames   # needs Java
+npx firebase-tools emulators:start --only database --project demo-cluecrew   # needs Java
 VITE_FIREBASE_EMULATOR=9000 npm run dev -- --host
 ```
 
