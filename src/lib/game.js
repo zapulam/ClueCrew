@@ -138,6 +138,8 @@ export function gameReducer(game, action) {
   switch (action.type) {
     case 'newGame':
       return action.game;
+    case 'clear':
+      return null;
     case 'reveal':
       return reveal(game, action);
     case 'endTurn':

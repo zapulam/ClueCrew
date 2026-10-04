@@ -64,14 +64,16 @@ function JoinForm({ initial = "" }) {
   );
 }
 
-function NotFound({ roomId }) {
+// `changed`: this phone was connected and the room went away, i.e. the big screen made a new code.
+function NotFound({ roomId, changed = false }) {
   return (
     <Centered>
       <Wordmark className="text-xl" />
-      <h1 className="text-2xl font-bold">Game not found</h1>
+      <h1 className="text-2xl font-bold">{changed ? "The code changed" : "Game not found"}</h1>
       <p className="text-gray-400">
-        {roomId ? `There's no game with the code ${roomId}.` : "This link is missing a room code."} Scan the QR code on the big
-        screen again, or type the code shown there.
+        {changed
+          ? "The big screen switched to a new code. Scan the new QR code, or type the code shown there."
+          : `${roomId ? `There's no game with the code ${roomId}.` : "This link is missing a room code."} Scan the QR code on the big screen again, or type the code shown there.`}
       </p>
       <JoinForm />
     </Centered>
@@ -160,7 +162,11 @@ function PhoneRoom({ roomId }) {
   const [confirm, setConfirm] = useState(null); // { index, gameId, seq }
   const [pending, setPending] = useState(null); // { key, type, index?, gameId }
   const [toast, setToast] = useState(null); // { id, kind, text }
+  const [roomWasLive, setRoomWasLive] = useState(false);
 
+  useEffect(() => {
+    if (room.exists) setRoomWasLive(true);
+  }, [room.exists]);
   useEffect(() => {
     handle?.setTeam(team);
   }, [handle, team]);
@@ -221,7 +227,7 @@ function PhoneRoom({ roomId }) {
       </Centered>
     );
   }
-  if (!room.exists) return <NotFound roomId={roomId} />;
+  if (!room.exists) return <NotFound roomId={roomId} changed={roomWasLive} />;
 
   if (!team || pickingTeam) {
     return (

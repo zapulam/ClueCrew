@@ -12,7 +12,9 @@ const NO_CODEMASTERS = { green: 0, blue: 0 };
 export function useHostRelay({ enabled, roomId, game, dispatch }) {
   const [handle, setHandle] = useState(null);
   const [status, setStatus] = useState("connecting");
-  const [codemasters, setCodemasters] = useState(NO_CODEMASTERS);
+  // Counts are stored with the room they came from, so a switch to a new code reads as
+  // "nobody connected" right away instead of one render later (which could auto-start a game).
+  const [codemasters, setCodemasters] = useState({ roomId: null, counts: NO_CODEMASTERS });
   const [attempt, setAttempt] = useState(0);
   // Lets the cleanup tell "switched to a new code" (delete the old room) from other teardowns.
   const currentRoomId = useRef(roomId);
@@ -30,12 +32,12 @@ export function useHostRelay({ enabled, roomId, game, dispatch }) {
         if (action) dispatch(action);
       },
       onCodemasters: (counts) => {
-        if (!closed) setCodemasters(counts);
+        if (!closed) setCodemasters({ roomId, counts });
       },
       onSuperseded: () => {
         if (closed) return;
         setHandle(null);
-        setCodemasters(NO_CODEMASTERS);
+        setCodemasters({ roomId: null, counts: NO_CODEMASTERS });
         setStatus("superseded");
       },
     }).then(
@@ -57,7 +59,7 @@ export function useHostRelay({ enabled, roomId, game, dispatch }) {
       closed = true;
       room?.close({ retire: currentRoomId.current !== roomId });
       setHandle(null);
-      setCodemasters(NO_CODEMASTERS);
+      setCodemasters({ roomId: null, counts: NO_CODEMASTERS });
     };
   }, [enabled, roomId, dispatch, attempt]);
 
@@ -67,7 +69,7 @@ export function useHostRelay({ enabled, roomId, game, dispatch }) {
 
   return {
     status: enabled && roomId ? status : "off",
-    codemasters,
+    codemasters: enabled && codemasters.roomId === roomId ? codemasters.counts : NO_CODEMASTERS,
     retry: () => setAttempt((n) => n + 1),
   };
 }

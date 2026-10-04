@@ -28,10 +28,11 @@ function StatusRow({ team, count }) {
   );
 }
 
-export default function ConnectModal({ roomId, status, codemasters, onNewCode, onRetry, onClose, startsGame = false }) {
+export default function ConnectModal({ roomId, status, codemasters, onNewCode, onRetry, onClose, startsGame = false, gameInProgress = false }) {
   const url = buildJoinUrl(roomId);
   const [copied, setCopied] = useState(false);
   const [autoClosing, setAutoClosing] = useState(false);
+  const [confirmingNewCode, setConfirmingNewCode] = useState(false);
   const bothConnected = codemasters.green > 0 && codemasters.blue > 0;
 
   // Close by itself once the second codemaster joins, so the QR code isn't left up for guessers.
@@ -53,6 +54,12 @@ export default function ConnectModal({ roomId, status, codemasters, onNewCode, o
   }, [bothConnected]);
 
   useEffect(() => setCopied(false), [roomId]);
+
+  // A new code ends the current game, so ask first if cards have already been revealed.
+  const requestNewCode = () => {
+    if (gameInProgress) setConfirmingNewCode(true);
+    else onNewCode();
+  };
 
   const copyLink = () => {
     navigator.clipboard?.writeText(url).then(() => setCopied(true), () => {});
@@ -116,13 +123,36 @@ export default function ConnectModal({ roomId, status, codemasters, onNewCode, o
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap justify-end gap-3">
-        <button onClick={onNewCode} className={secondaryButton} title="Disconnect everyone and show a fresh code">
-          New code
-        </button>
-        <button onClick={onClose} className={primaryButton}>
-          Done
-        </button>
+      <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+        {confirmingNewCode ? (
+          <>
+            <p key="warning" className="w-full text-sm md:text-base text-amber-200">
+              This ends the current game and disconnects both phones.
+            </p>
+            <button
+              key="start-over"
+              onClick={() => {
+                setConfirmingNewCode(false);
+                onNewCode();
+              }}
+              className="bg-red-700 hover:bg-red-600 text-white px-6 py-3 rounded-xl font-semibold cursor-pointer transition-colors shadow-lg"
+            >
+              Start over
+            </button>
+            <button key="cancel" onClick={() => setConfirmingNewCode(false)} className={secondaryButton}>
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button key="new-code" onClick={requestNewCode} className={secondaryButton} title="End this game and show a fresh code">
+              New code
+            </button>
+            <button key="done" onClick={onClose} className={primaryButton}>
+              Done
+            </button>
+          </>
+        )}
       </div>
     </Modal>
   );
