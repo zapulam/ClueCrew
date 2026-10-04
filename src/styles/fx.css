@@ -95,7 +95,21 @@ body {
   filter: drop-shadow(0 0 40px rgba(239, 68, 68, 0.6));
 }
 
+/* Codemaster phone */
+@keyframes cn-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+@keyframes cn-toast-in {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.cn-sheet { animation: cn-sheet-up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.cn-toast { animation: cn-toast-in 0.3s ease-out; }
+
 @media (prefers-reduced-motion: reduce) {
+  .cn-sheet,
+  .cn-toast { animation: cn-fade-in 0.2s ease-out; }
   .cn-card-flip,
   .cn-card-pop,
   .cn-card-shake,
