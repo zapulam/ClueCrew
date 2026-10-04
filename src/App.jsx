@@ -1,7 +1,8 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { GameGrid } from "./components/Gamegrid";
 import { Modal } from "./components/Modal";
+import { RevealFx } from "./components/RevealFx";
 import { primaryButton, secondaryButton } from "./components/buttons";
 import {
   PlusCircle,
@@ -86,6 +87,24 @@ export default function CodeNames() {
     saveHostSession({ roomId: session.roomId, game, phonesEnabled: session.phonesEnabled });
   }, [session, game]);
 
+  // Animate each new reveal or End Turn exactly once. Starting from the restored
+  // event means a refresh doesn't replay the last animation.
+  const eventKey = game?.lastEvent ? `${game.gameId}:${game.lastEvent.seq}` : null;
+  const seenEventKey = useRef(eventKey);
+  const [fx, setFx] = useState(null);
+  const [fxDoneKey, setFxDoneKey] = useState(null);
+  const onFxDone = useCallback((key) => setFxDoneKey(key), []);
+  useEffect(() => {
+    if (!eventKey || eventKey === seenEventKey.current) return;
+    seenEventKey.current = eventKey;
+    const event = game.lastEvent;
+    setFx({ key: eventKey, event, word: event.index !== null ? game.words[event.index] : null, winner: game.winner });
+  }, [eventKey, game]);
+  const fxPlaying = Boolean(fx) && fx.key === eventKey && fxDoneKey !== fx.key;
+  const cardFx = fx && fx.event.type === "reveal" && fx.key.startsWith(`${game?.gameId}:`)
+    ? { index: fx.event.index, outcome: fx.event.outcome, key: fx.key }
+    : null;
+
   const startNewGame = () => {
     dispatch({ type: "newGame", game: createGame(WORD_POOL) });
     setCodemasterMode(false);
@@ -110,7 +129,8 @@ export default function CodeNames() {
 
   const counts = getCounts(game);
   const activeTeam = game && !game.winner ? game.turn : null;
-  const showWin = Boolean(game?.winner) && dismissedWinFor !== game.gameId;
+  // Hold the win popup until the winning reveal's animation has finished.
+  const showWin = Boolean(game?.winner) && dismissedWinFor !== game.gameId && !fxPlaying;
 
   return (
     <div className="flex flex-col w-screen h-screen">
@@ -357,8 +377,10 @@ export default function CodeNames() {
                   roles={game.roles}
                   onReveal={handleReveal}
                   codemasterMode={codemasterMode}
+                  cardFx={cardFx}
                 />
               </div>
+              <RevealFx fx={fx} onDone={onFxDone} />
 
               {/* Turn and score bar - bottom of screen below large screens */}
               <div className="flex lg:hidden flex-shrink-0 justify-center bg-gray-900/90 backdrop-blur-xl p-3 border-t border-gray-700/50 relative z-10 w-full">
