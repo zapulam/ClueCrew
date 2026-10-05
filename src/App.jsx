@@ -135,11 +135,14 @@ export default function ClueCrew() {
     if (!eventKey || eventKey === seenEventKey.current) return;
     seenEventKey.current = eventKey;
     const event = game.lastEvent;
-    setFx({ key: eventKey, event, word: event.index !== null ? game.words[event.index] : null, winner: game.winner });
+    setFx({ key: eventKey, gameId: game.gameId, event, word: event.index !== null ? game.words[event.index] : null, winner: game.winner });
   }, [eventKey, game]);
-  const fxPlaying = Boolean(fx) && fx.key === eventKey && fxDoneKey !== fx.key;
-  const cardFx = fx && fx.event.type === "reveal" && fx.key.startsWith(`${game?.gameId}:`)
-    ? { index: fx.event.index, outcome: fx.event.outcome, key: fx.key }
+  // Only the current game's animation plays. The board (and RevealFx) unmounts while there's
+  // no game, so without this a new game's board would replay the old game's last reveal.
+  const gameFx = fx?.gameId === game?.gameId ? fx : null;
+  const fxPlaying = Boolean(gameFx) && gameFx.key === eventKey && fxDoneKey !== gameFx.key;
+  const cardFx = gameFx?.event.type === "reveal"
+    ? { index: gameFx.event.index, outcome: gameFx.event.outcome, key: gameFx.key }
     : null;
 
   const startNewGame = () => {
@@ -536,7 +539,7 @@ export default function ClueCrew() {
                   cardFx={cardFx}
                 />
               </div>
-              <RevealFx fx={fx} onDone={onFxDone} />
+              <RevealFx fx={gameFx} onDone={onFxDone} />
 
               {/* Turn and score bar - bottom of screen below large screens */}
               <div className="flex lg:hidden flex-shrink-0 justify-center bg-gray-900/90 backdrop-blur-xl p-3 border-t border-gray-700/50 relative z-10 w-full">
