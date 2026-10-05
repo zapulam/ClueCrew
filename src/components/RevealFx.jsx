@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
-import { Check, Timer, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { otherTeam } from "../lib/game";
 
 const TEAM_NAME = { green: "Green", blue: "Blue" };
@@ -51,9 +51,7 @@ function describe(fx) {
   const { event, word, winner } = fx;
   const team = TEAM_NAME[event.team];
   const next = TEAM_NAME[otherTeam(event.team)];
-  if (event.type === "endTurn") {
-    return event.source === "timer" ? `Time's up. ${next}'s turn.` : `${team} ended their turn. ${next}'s turn.`;
-  }
+  if (event.type === "endTurn") return `${team} ended their turn. ${next}'s turn.`;
   switch (event.outcome) {
     case "correct":
       return winner ? `${word}. Correct! That's all of them. ${team} wins.` : `${word}. Correct! ${team} keeps guessing.`;
@@ -131,15 +129,7 @@ function FxLayer({ fx, phase }) {
 
   let style;
   let line;
-  if (event.type === "endTurn" && event.source === "timer") {
-    style = "bg-gray-800/95 border-2 border-amber-400/70 text-amber-100 px-8 py-4";
-    line = (
-      <>
-        <Timer size={24} strokeWidth={2.5} />
-        Time's up! {next}'s turn.
-      </>
-    );
-  } else if (event.type === "endTurn") {
+  if (event.type === "endTurn") {
     style = "bg-gray-800/95 border border-gray-700 text-gray-100 px-8 py-4";
     line = `${team} ended their turn. ${next}'s turn.`;
   } else if (event.outcome === "correct") {
