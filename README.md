@@ -80,7 +80,7 @@ npm run preview
 5. **Lose Condition**: Revealing the assassin causes instant loss
 
 ### Controls
-- **New Game**: Start a fresh game (with confirmation if game is in progress)
+- **New Game**: Start a fresh game (with confirmation if game is in progress). With codemaster phones, it also closes the old room and shows a new QR code
 - **End Turn**: Stop guessing and pass the turn to the other team
 - **Toggle View**: Switch between Player and Codemaster modes
 - **Codemaster Phones**: Show the QR code for codemasters to scan
@@ -96,7 +96,7 @@ Instead of peeking at the shared screen, each team's codemaster can use their ow
 3. The phone lists every word grouped by color: your team first, then the other team, Free, and Assassin. The dot at the top glows in your team's color on your turn and is grey otherwise. **Switch team** changes teams.
 4. When your team guesses a word out loud, tap it and confirm. The big screen reveals the card and plays the animation. Taps only count on your team's turn, and **End turn** passes the turn.
 
-The popup closes itself once both codemasters have joined, so guessers can't scan it. **New code** starts over: it ends the current game (anyone who peeked has seen its key), disconnects both phones and shows a fresh code. The next game starts when both codemasters have scanned it. If cards have already been revealed, it asks first. New games reuse the same room, so nobody needs to rescan between games.
+The popup closes itself once both codemasters have joined, so guessers can't scan it. **New code** starts over: it ends the current game (anyone who peeked has seen its key), disconnects both phones and shows a fresh code. The next game starts when both codemasters have scanned it. If cards have already been revealed, it asks first. **New Game** does the same: the old room goes away with the old game, both phones are disconnected and the QR code comes up for the next one.
 
 ### How it works
 

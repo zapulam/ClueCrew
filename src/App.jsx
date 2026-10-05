@@ -143,6 +143,13 @@ export default function ClueCrew() {
     : null;
 
   const startNewGame = () => {
+    // With codemaster phones, the old room goes away with the old game: both phones are
+    // disconnected and the QR code comes up. The game starts once both have scanned it.
+    if (phonesEnabled && game) {
+      newRoomCode();
+      setIsConnectOpen(true);
+      return;
+    }
     dispatch({ type: "newGame", game: createGame(WORD_POOL) });
     setCodemasterMode(false);
     setDismissedWinFor(null);
@@ -300,6 +307,7 @@ export default function ClueCrew() {
               </h2>
               <p className="text-gray-300 text-center mb-8 text-lg">
                 A game is already in progress. Starting a new game will overwrite the current one.
+                {phonesEnabled && " Both codemaster phones will be disconnected and need to scan a new code."}
               </p>
               <div className="flex gap-4">
                 <button onClick={() => { setShowNewGameConfirm(false); startNewGame(); }} className={primaryButton}>
