@@ -3,19 +3,23 @@ import { motion } from "framer-motion";
 import { GameGrid } from "./components/Gamegrid";
 import { Modal } from "./components/Modal";
 import { RevealFx } from "./components/RevealFx";
+import { TurnTimerPicker } from "./components/TurnTimerPicker";
 import { primaryButton, secondaryButton } from "./components/buttons";
 import {
   PlusCircle,
   Eye,
   EyeOff,
   MessageCircleQuestion,
+  Play,
   SkipForward,
   Smartphone,
+  Timer,
 } from "lucide-react";
 import { createGame, gameReducer, getCounts, otherTeam, parseWordList, TOTALS } from "./lib/game";
 import { generateRoomId, loadHostSession, normalizeRoomId, saveHostSession } from "./lib/room";
 import { relayConfigured } from "./lib/firebaseConfig";
 import { useHostRelay } from "./hooks/useHostRelay";
+import { formatClock, useTurnTimer } from "./hooks/useTurnTimer";
 import wordsContent from './data/words.txt?raw';
 
 // Loaded on first use so the QR code library stays out of the main bundle.
@@ -24,7 +28,34 @@ const ConnectModal = lazy(() => import("./components/ConnectModal"));
 const WORD_POOL = parseWordList(wordsContent);
 const TEAM_NAME = { green: "Green", blue: "Blue" };
 
-function TurnControls({ game, onEndTurn }) {
+// Time left in the turn; click to pause. Ticks by itself so the board doesn't re-render every tick.
+function TurnClock({ timer }) {
+  const paused = timer.pausedLeft !== null;
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    if (paused) return;
+    setNow(Date.now());
+    const tick = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(tick);
+  }, [paused, timer.endsAt]);
+  const seconds = Math.ceil((paused ? timer.pausedLeft : Math.max(0, timer.endsAt - now)) / 1000);
+  const low = !paused && seconds <= 10;
+  return (
+    <button
+      onClick={timer.togglePause}
+      title={paused ? "Resume the turn timer" : "Pause the turn timer"}
+      aria-label={`${formatClock(seconds)} left. ${paused ? "Resume" : "Pause"} the turn timer`}
+      className={`inline-flex items-center gap-1.5 px-3 border-l border-white/25 text-sm font-semibold tabular-nums transition-colors cursor-pointer ${
+        low ? "bg-red-600 animate-pulse" : "bg-black/10 hover:bg-black/25"
+      } ${paused ? "text-white/70" : ""}`}
+    >
+      {paused ? <Play size={14} /> : <Timer size={14} />}
+      {formatClock(seconds)}
+    </button>
+  );
+}
+
+function TurnControls({ game, timer, onEndTurn }) {
   if (game.winner) {
     return (
       <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-gray-800 border border-gray-700 font-bold text-gray-100 whitespace-nowrap">
@@ -35,7 +66,7 @@ function TurnControls({ game, onEndTurn }) {
   const glow = game.turn === "green"
     ? "bg-green-600 shadow-[0_0_24px_rgba(34,197,94,0.35)]"
     : "bg-blue-600 shadow-[0_0_24px_rgba(59,130,246,0.35)]";
-  // One pill: whose turn it is, with End turn as a darker segment on its right.
+  // One pill: whose turn it is, then the turn timer if there is one, then End turn as a darker segment.
   return (
     <motion.div
       key={game.turn}
@@ -48,6 +79,7 @@ function TurnControls({ game, onEndTurn }) {
         <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
         {TEAM_NAME[game.turn]}'s turn
       </span>
+      {timer && <TurnClock timer={timer} />}
       <button
         onClick={onEndTurn}
         title={`End ${TEAM_NAME[game.turn]}'s turn`}
@@ -92,14 +124,16 @@ export default function ClueCrew() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [roomId, setRoomId] = useState(session.roomId);
   const [phonesEnabled, setPhonesEnabled] = useState(relayConfigured && session.phonesEnabled && Boolean(session.roomId));
+  const [turnSeconds, setTurnSeconds] = useState(session.turnSeconds);
   const [isConnectOpen, setIsConnectOpen] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const relay = useHostRelay({ enabled: phonesEnabled, roomId, game, dispatch });
+  const timer = useTurnTimer({ game, seconds: turnSeconds, dispatch });
 
   useEffect(() => {
-    saveHostSession({ roomId, game, phonesEnabled });
-  }, [roomId, game, phonesEnabled]);
+    saveHostSession({ roomId, game, phonesEnabled, turnSeconds });
+  }, [roomId, game, phonesEnabled, turnSeconds]);
 
   const openConnect = () => {
     if (!roomId) setRoomId(generateRoomId());
@@ -226,6 +260,8 @@ export default function ClueCrew() {
                 onClose={closeConnect}
                 startsGame={!game}
                 gameInProgress={gameInProgress}
+                turnSeconds={turnSeconds}
+                onTurnSecondsChange={setTurnSeconds}
               />
             </Suspense>
           )}
@@ -281,7 +317,7 @@ export default function ClueCrew() {
                 </div>
                 <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-4 rounded-xl border border-gray-600/50">
                   <p className="font-semibold text-gray-200 mb-2">Turns:</p>
-                  <p>Keep guessing while you're right. A wrong guess passes the turn, or press <strong>End turn</strong> to stop.</p>
+                  <p>Keep guessing while you're right. A wrong guess passes the turn, or press <strong>End turn</strong> to stop. With a <strong>turn timer</strong>, the turn also passes when time runs out.</p>
                 </div>
                 <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-4 rounded-xl border border-green-700/50">
                   <p className="font-semibold text-green-200 mb-2">Views:</p>
@@ -312,6 +348,7 @@ export default function ClueCrew() {
                 A game is already in progress. Starting a new game will overwrite the current one.
                 {phonesEnabled && " Both codemaster phones will be disconnected and need to scan a new code."}
               </p>
+              <TurnTimerPicker value={turnSeconds} onChange={setTurnSeconds} className="justify-center mb-8" />
               <div className="flex gap-4">
                 <button onClick={() => { setShowNewGameConfirm(false); startNewGame(); }} className={primaryButton}>
                   Start New Game
@@ -392,6 +429,8 @@ export default function ClueCrew() {
                   </div>
                 </div>
 
+                <TurnTimerPicker value={turnSeconds} onChange={setTurnSeconds} className="justify-center mb-8" />
+
                 {/* Start button */}
                 <button
                   onClick={confirmAndStartNewGame}
@@ -471,9 +510,9 @@ export default function ClueCrew() {
                   <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent flex-shrink-0">
                     ClueCrew
                   </h2>
-                  {/* Turn and progress - large screens, centered in header */}
-                  <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-4">
-                    <TurnControls game={game} onEndTurn={handleEndTurn} />
+                  {/* Turn and progress - extra-large screens, centered in header (narrower ones run into the header buttons) */}
+                  <div className="hidden xl:flex absolute left-1/2 transform -translate-x-1/2 items-center gap-4">
+                    <TurnControls game={game} timer={timer} onEndTurn={handleEndTurn} />
                     <div className="flex items-center gap-3">
                       <ScorePills counts={counts} activeTeam={activeTeam} />
                     </div>
@@ -541,10 +580,10 @@ export default function ClueCrew() {
               </div>
               <RevealFx fx={gameFx} onDone={onFxDone} />
 
-              {/* Turn and score bar - bottom of screen below large screens */}
-              <div className="flex lg:hidden flex-shrink-0 justify-center bg-gray-900/90 backdrop-blur-xl p-3 border-t border-gray-700/50 relative z-10 w-full">
+              {/* Turn and score bar - bottom of screen below extra-large screens */}
+              <div className="flex xl:hidden flex-shrink-0 justify-center bg-gray-900/90 backdrop-blur-xl p-3 border-t border-gray-700/50 relative z-10 w-full">
                 <div className="flex justify-center items-center gap-3 flex-wrap">
-                  <TurnControls game={game} onEndTurn={handleEndTurn} />
+                  <TurnControls game={game} timer={timer} onEndTurn={handleEndTurn} />
                   <ScorePills counts={counts} activeTeam={activeTeam} compact />
                 </div>
               </div>

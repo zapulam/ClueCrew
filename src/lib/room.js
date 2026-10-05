@@ -51,15 +51,16 @@ export function loadHostSession() {
       roomId: normalizeRoomId(saved?.roomId),
       game: fromWire(saved?.game),
       phonesEnabled: saved?.phonesEnabled === true,
+      turnSeconds: Number.isInteger(saved?.turnSeconds) && saved.turnSeconds > 0 ? saved.turnSeconds : 0,
     };
   } catch {
-    return { roomId: null, game: null, phonesEnabled: false };
+    return { roomId: null, game: null, phonesEnabled: false, turnSeconds: 0 };
   }
 }
 
-export function saveHostSession({ roomId, game, phonesEnabled }) {
+export function saveHostSession({ roomId, game, phonesEnabled, turnSeconds }) {
   try {
-    sessionStorage.setItem(HOST_KEY, JSON.stringify({ roomId, game: toWire(game), phonesEnabled }));
+    sessionStorage.setItem(HOST_KEY, JSON.stringify({ roomId, game: toWire(game), phonesEnabled, turnSeconds }));
   } catch {
     // Storage unavailable (private mode): a refresh just starts fresh.
   }

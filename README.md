@@ -82,6 +82,7 @@ npm run preview
 ### Controls
 - **New Game**: Start a fresh game (with confirmation if game is in progress). With codemaster phones, it also closes the old room and shows a new QR code
 - **End Turn**: Stop guessing and pass the turn to the other team
+- **Turn Timer**: Pick a turn length (or Off) on the start screen, the New Game prompt or the codemaster phones popup. When time runs out the turn passes by itself; click the clock to pause it. The timer runs on the big screen only
 - **Toggle View**: Switch between Player and Codemaster modes
 - **Codemaster Phones**: Show the QR code for codemasters to scan
 - **Collapse Sidebar**: Minimize the sidebar for more game space
