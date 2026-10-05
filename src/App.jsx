@@ -29,16 +29,30 @@ const WORD_POOL = parseWordList(wordsContent);
 const TEAM_NAME = { green: "Green", blue: "Blue" };
 
 // Time left in the turn; click to pause. Ticks by itself so the board doesn't re-render every tick.
+// At zero it just says so: the team finishes up and ends the turn themselves.
 function TurnClock({ timer }) {
   const paused = timer.pausedLeft !== null;
   const [now, setNow] = useState(Date.now);
+  const seconds = Math.ceil((paused ? timer.pausedLeft : Math.max(0, timer.endsAt - now)) / 1000);
+  const timeUp = !paused && seconds === 0;
   useEffect(() => {
-    if (paused) return;
+    if (paused || timeUp) return;
     setNow(Date.now());
     const tick = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(tick);
-  }, [paused, timer.endsAt]);
-  const seconds = Math.ceil((paused ? timer.pausedLeft : Math.max(0, timer.endsAt - now)) / 1000);
+  }, [paused, timeUp, timer.endsAt]);
+  if (timeUp) {
+    return (
+      <span
+        role="status"
+        title="Time's up. Finish the turn with End turn."
+        className="inline-flex items-center gap-1.5 px-3 border-l border-white/25 text-sm font-semibold bg-red-600 animate-pulse"
+      >
+        <Timer size={14} />
+        Time's up
+      </span>
+    );
+  }
   const low = !paused && seconds <= 10;
   return (
     <button
@@ -129,7 +143,7 @@ export default function ClueCrew() {
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const relay = useHostRelay({ enabled: phonesEnabled, roomId, game, dispatch });
-  const timer = useTurnTimer({ game, seconds: turnSeconds, dispatch });
+  const timer = useTurnTimer({ game, seconds: turnSeconds });
 
   useEffect(() => {
     saveHostSession({ roomId, game, phonesEnabled, turnSeconds });
@@ -321,7 +335,7 @@ export default function ClueCrew() {
                 <div className="space-y-4">
                   <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-4 rounded-xl border border-gray-600/50">
                     <p className="font-semibold text-gray-200 mb-2">Turns:</p>
-                    <p>Keep guessing while you're right. A wrong guess passes the turn, or press <strong>End turn</strong> to stop. With a <strong>turn timer</strong>, the turn also passes when time runs out.</p>
+                    <p>Keep guessing while you're right. A wrong guess passes the turn, or press <strong>End turn</strong> to stop. The <strong>turn timer</strong> is only a guide: when it runs out, finish up and press End turn.</p>
                   </div>
                   <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-4 rounded-xl border border-green-700/50">
                     <p className="font-semibold text-green-200 mb-2">Views:</p>

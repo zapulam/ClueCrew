@@ -183,9 +183,7 @@ export function toWire(game) {
           role: event.role ?? null,
           team: event.team,
           outcome: event.outcome ?? null,
-          // The database only accepts host and phone. A turn timer runs on the big screen,
-          // so its End Turn goes out as the host's.
-          source: event.source === 'phone' ? 'phone' : 'host',
+          source: event.source ?? 'host',
         }
       : null,
   };
