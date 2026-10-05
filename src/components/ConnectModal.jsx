@@ -86,8 +86,9 @@ export default function ConnectModal({
         Each codemaster scans this and picks their team.{startsGame && " The game starts as soon as both have joined."} Close it before the guessers can scan it too.
       </p>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-[280px_minmax(0,1fr)] md:gap-8 items-center">
-        <div className="mx-auto w-full max-w-[280px] aspect-square bg-white rounded-2xl p-4">
+      {/* The QR code shrinks on short screens so the whole popup fits without scrolling. */}
+      <div className="mt-6 short:mt-4 grid gap-6 md:grid-cols-[min(280px,45dvh)_minmax(0,1fr)] md:gap-8 items-center">
+        <div className="mx-auto w-full max-w-[min(280px,45dvh)] aspect-square bg-white rounded-2xl p-4">
           <QRCodeSVG
             value={url}
             level="M"
@@ -120,8 +121,6 @@ export default function ConnectModal({
             <StatusRow team="blue" count={codemasters.blue} />
           </div>
 
-          <TurnTimerPicker value={turnSeconds} onChange={onTurnSecondsChange} className="mt-5" />
-
           {status === "connecting" && <p className="mt-3 text-sm text-gray-400">Connecting to the phone service…</p>}
           {status === "error" && (
             <p className="mt-3 text-sm text-red-300">
@@ -137,7 +136,7 @@ export default function ConnectModal({
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+      <div className="mt-6 short:mt-4 flex flex-wrap items-center justify-end gap-3">
         {confirmingNewCode ? (
           <>
             <p key="warning" className="w-full text-sm md:text-base text-amber-200">
@@ -159,6 +158,7 @@ export default function ConnectModal({
           </>
         ) : (
           <>
+            <TurnTimerPicker key="timer" value={turnSeconds} onChange={onTurnSecondsChange} className="mr-auto" />
             <button key="new-code" onClick={requestNewCode} className={secondaryButton} title="End this game and show a fresh code">
               New code
             </button>
