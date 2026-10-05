@@ -288,49 +288,54 @@ export default function ClueCrew() {
 
           {/* Help Modal */}
           {isHelpOpen && (
-            <Modal label="How to play" onClose={() => setIsHelpOpen(false)}>
+            <Modal label="How to play" width="wide" onClose={() => setIsHelpOpen(false)}>
               <h3 className="text-2xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 How to Play ClueCrew
               </h3>
-              <div className="space-y-4 text-sm text-gray-300">
-                <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/50 p-4 rounded-xl border border-blue-700/50">
-                  <p className="font-semibold text-blue-200 mb-2">Objective:</p>
-                  <p>Find all your team's words first.</p>
+              {/* Two columns from md up, so the rules fit on a laptop screen without scrolling. */}
+              <div className="grid gap-4 md:grid-cols-2 text-sm text-gray-300">
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/50 p-4 rounded-xl border border-blue-700/50">
+                    <p className="font-semibold text-blue-200 mb-2">Objective:</p>
+                    <p>Find all your team's words first.</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-3 rounded-xl border border-green-700/50">
+                      <p className="font-semibold text-green-200">Green Team:</p>
+                      <p className="text-green-300">9 words</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/50 p-3 rounded-xl border border-blue-700/50">
+                      <p className="font-semibold text-blue-200">Blue Team:</p>
+                      <p className="text-blue-300">8 words</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-3 rounded-xl border border-gray-600/50">
+                      <p className="font-semibold text-gray-200">Neutral:</p>
+                      <p className="text-gray-300">7 words</p>
+                    </div>
+                    <div className="bg-gradient-to-r from-purple-900/50 to-purple-800/50 p-3 rounded-xl border border-purple-700/50">
+                      <p className="font-semibold text-purple-200">Assassin:</p>
+                      <p className="text-purple-300">1 word (instant loss)</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-3 rounded-xl border border-green-700/50">
-                    <p className="font-semibold text-green-200">Green Team:</p>
-                    <p className="text-green-300">9 words</p>
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-4 rounded-xl border border-gray-600/50">
+                    <p className="font-semibold text-gray-200 mb-2">Turns:</p>
+                    <p>Keep guessing while you're right. A wrong guess passes the turn, or press <strong>End turn</strong> to stop. With a <strong>turn timer</strong>, the turn also passes when time runs out.</p>
                   </div>
-                  <div className="bg-gradient-to-r from-blue-900/50 to-blue-800/50 p-3 rounded-xl border border-blue-700/50">
-                    <p className="font-semibold text-blue-200">Blue Team:</p>
-                    <p className="text-blue-300">8 words</p>
+                  <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-4 rounded-xl border border-green-700/50">
+                    <p className="font-semibold text-green-200 mb-2">Views:</p>
+                    <p className="text-green-300"><strong>Codemaster View:</strong> Sees everything.</p>
+                    <p className="text-green-300"><strong>Player View:</strong> Sees only revealed words.</p>
+                    {relayConfigured && (
+                      <p className="text-green-300 mt-2">
+                        <strong>Codemaster phones:</strong> each codemaster scans the code from the phone button, sees their words on their phone, and taps the word their team guesses.
+                      </p>
+                    )}
                   </div>
-                  <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-3 rounded-xl border border-gray-600/50">
-                    <p className="font-semibold text-gray-200">Neutral:</p>
-                    <p className="text-gray-300">7 words</p>
-                  </div>
-                  <div className="bg-gradient-to-r from-purple-900/50 to-purple-800/50 p-3 rounded-xl border border-purple-700/50">
-                    <p className="font-semibold text-purple-200">Assassin:</p>
-                    <p className="text-purple-300">1 word (instant loss)</p>
-                  </div>
-                </div>
-                <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 p-4 rounded-xl border border-gray-600/50">
-                  <p className="font-semibold text-gray-200 mb-2">Turns:</p>
-                  <p>Keep guessing while you're right. A wrong guess passes the turn, or press <strong>End turn</strong> to stop. With a <strong>turn timer</strong>, the turn also passes when time runs out.</p>
-                </div>
-                <div className="bg-gradient-to-r from-green-900/50 to-green-800/50 p-4 rounded-xl border border-green-700/50">
-                  <p className="font-semibold text-green-200 mb-2">Views:</p>
-                  <p className="text-green-300"><strong>Codemaster View:</strong> Sees everything.</p>
-                  <p className="text-green-300"><strong>Player View:</strong> Sees only revealed words.</p>
-                  {relayConfigured && (
-                    <p className="text-green-300 mt-2">
-                      <strong>Codemaster phones:</strong> each codemaster scans the code from the phone button, sees their words on their phone, and taps the word their team guesses.
-                    </p>
-                  )}
                 </div>
               </div>
-              <div className="flex justify-center mt-8">
+              <div className="flex justify-center mt-8 short:mt-6">
                 <button onClick={() => setIsHelpOpen(false)} className={primaryButton}>
                   Got it!
                 </button>
@@ -377,7 +382,8 @@ export default function ClueCrew() {
             </Modal>
           )}
           {!game ? (
-            <div className="flex flex-col items-center justify-center flex-1 relative overflow-hidden bg-gray-900">
+            // my-auto centers the card but lets it scroll on screens too short for it (justify-center would clip it).
+            <div className="flex flex-col items-center flex-1 min-h-0 relative overflow-y-auto overflow-x-hidden bg-gray-900 py-4">
               {/* Background decorative elements */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-full blur-3xl"></div>
@@ -389,20 +395,20 @@ export default function ClueCrew() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="relative text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl p-12 shadow-2xl border border-gray-700/50 max-w-2xl mx-4"
+                className="relative my-auto text-center bg-gray-800/90 backdrop-blur-xl rounded-3xl p-8 md:p-12 short:py-6 shadow-2xl border border-gray-700/50 max-w-2xl mx-4"
               >
                 {/* Title */}
-                <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-6 tracking-tight">
+                <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-6 short:mb-3 tracking-tight">
                   ClueCrew
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-xl text-gray-300 mb-8 font-medium">
+                <p className="text-xl text-gray-300 mb-8 short:mb-4 font-medium">
                   The ultimate word association game for teams
                 </p>
 
                 {/* Game description */}
-                <div className="mb-8">
+                <div className="mb-8 short:mb-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-300">
                     <div className="flex items-center gap-2 bg-green-900/30 px-3 py-2 rounded-lg border border-green-700/30">
                       <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -420,7 +426,7 @@ export default function ClueCrew() {
                 </div>
 
                 {/* Word count */}
-                <div className="mb-8">
+                <div className="mb-8 short:mb-4">
                   <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-900/30 to-blue-900/30 px-4 py-2 rounded-full border border-green-700/30">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm font-medium text-gray-300">
@@ -429,7 +435,7 @@ export default function ClueCrew() {
                   </div>
                 </div>
 
-                <TurnTimerPicker value={turnSeconds} onChange={setTurnSeconds} className="justify-center mb-8" />
+                <TurnTimerPicker value={turnSeconds} onChange={setTurnSeconds} className="justify-center mb-8 short:mb-4" />
 
                 {/* Start button */}
                 <button
@@ -492,7 +498,7 @@ export default function ClueCrew() {
                 )}
 
                 {/* Footer text */}
-                <p className="text-xs text-gray-400 mt-6">
+                <p className="text-xs text-gray-400 mt-6 short:mt-4">
                   Use the header buttons to toggle codemaster view and access game controls
                 </p>
               </motion.div>
@@ -568,7 +574,7 @@ export default function ClueCrew() {
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 flex items-center justify-center overflow-y-auto md:overflow-hidden relative z-10">
+              <div className="flex-1 min-h-0 flex flex-col overflow-y-auto relative z-10">
                 <GameGrid
                   words={game.words}
                   revealed={game.revealed}

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Laptop-height windows: `short:` tightens spacing so screens fit without scrolling. */
+@custom-variant short (@media (max-height: 800px));
+
 @theme {
   --color-primary: #1e40af;
   --color-secondary: #64748b;

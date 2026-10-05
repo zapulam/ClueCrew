@@ -71,13 +71,16 @@ export function GameGrid({ words, revealed, roles, onReveal, codemasterMode, car
   }
 
   return (
-    <div className="grid grid-cols-5 gap-2 md:gap-4 w-full mx-auto p-2 md:p-4">
+    // The five rows share the height the board is given, so it fits any screen. A row never gets
+    // shorter than its words; on a screen too short for that, the board scrolls instead of clipping.
+    <div className="grid flex-1 grid-cols-5 grid-rows-[repeat(5,minmax(min-content,1fr))] gap-2 md:gap-4 w-full p-2 md:p-4">
       {words.map((word, idx) => {
         const isRevealed = revealed[idx];
         const cardRole = roles[idx];
         // Re-keying the card being revealed restarts its CSS animation.
         const animating = cardFx && cardFx.index === idx;
-        // From md up, words grow with the screen, sized so the longest (11 letters) fits on a card.
+        // From md up, words grow with the screen: the width keeps the longest (11 letters) on one
+        // line, the height keeps short, wide windows from outgrowing their cards.
 
         return (
           <button
@@ -90,7 +93,7 @@ export function GameGrid({ words, revealed, roles, onReveal, codemasterMode, car
               handleCardClick(idx);
             }}
             style={getCardStyle(cardRole, isRevealed)}
-            className={`min-h-[10vh] md:min-h-[14vh] text-xs md:text-[length:clamp(1rem,2.4vw_-_4px,2.75rem)] font-medium md:font-bold tracking-tight md:tracking-normal ${!isRevealed && !codemasterMode ? 'bg-[#fef3c7] hover:bg-[#fde68a]' : ''} ${animating ? CARD_FX[cardFx.outcome] : ''}`}
+            className={`text-xs md:text-[length:clamp(0.875rem,min(2.4vw_-_4px,4.2vh),2.75rem)] font-medium md:font-bold tracking-tight md:tracking-normal ${!isRevealed && !codemasterMode ? 'bg-[#fef3c7] hover:bg-[#fde68a]' : ''} ${animating ? CARD_FX[cardFx.outcome] : ''}`}
           >
             <span className="text-center" style={{ lineHeight: '1.2' }}>
               {word}
