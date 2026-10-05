@@ -77,6 +77,7 @@ export function GameGrid({ words, revealed, roles, onReveal, codemasterMode, car
         const cardRole = roles[idx];
         // Re-keying the card being revealed restarts its CSS animation.
         const animating = cardFx && cardFx.index === idx;
+        // From md up, words grow with the screen, sized so the longest (11 letters) fits on a card.
 
         return (
           <button
@@ -89,7 +90,7 @@ export function GameGrid({ words, revealed, roles, onReveal, codemasterMode, car
               handleCardClick(idx);
             }}
             style={getCardStyle(cardRole, isRevealed)}
-            className={`min-h-[10vh] md:min-h-[14vh] text-xs md:text-base font-medium md:font-bold tracking-tight md:tracking-normal ${!isRevealed && !codemasterMode ? 'bg-[#fef3c7] hover:bg-[#fde68a]' : ''} ${animating ? CARD_FX[cardFx.outcome] : ''}`}
+            className={`min-h-[10vh] md:min-h-[14vh] text-xs md:text-[length:clamp(1rem,2.4vw_-_4px,2.75rem)] font-medium md:font-bold tracking-tight md:tracking-normal ${!isRevealed && !codemasterMode ? 'bg-[#fef3c7] hover:bg-[#fde68a]' : ''} ${animating ? CARD_FX[cardFx.outcome] : ''}`}
           >
             <span className="text-center" style={{ lineHeight: '1.2' }}>
               {word}
