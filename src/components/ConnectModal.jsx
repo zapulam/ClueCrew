@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy } from "lucide-react";
 import { Modal } from "./Modal";
+import { TurnTimerPicker } from "./TurnTimerPicker";
 import { primaryButton, secondaryButton } from "./buttons";
 import { buildJoinUrl } from "../lib/room";
 
@@ -28,7 +29,18 @@ function StatusRow({ team, count }) {
   );
 }
 
-export default function ConnectModal({ roomId, status, codemasters, onNewCode, onRetry, onClose, startsGame = false, gameInProgress = false }) {
+export default function ConnectModal({
+  roomId,
+  status,
+  codemasters,
+  onNewCode,
+  onRetry,
+  onClose,
+  startsGame = false,
+  gameInProgress = false,
+  turnSeconds,
+  onTurnSecondsChange,
+}) {
   const url = buildJoinUrl(roomId);
   const [copied, setCopied] = useState(false);
   const [autoClosing, setAutoClosing] = useState(false);
@@ -107,6 +119,8 @@ export default function ConnectModal({ roomId, status, codemasters, onNewCode, o
             <StatusRow team="green" count={codemasters.green} />
             <StatusRow team="blue" count={codemasters.blue} />
           </div>
+
+          <TurnTimerPicker value={turnSeconds} onChange={onTurnSecondsChange} className="mt-5" />
 
           {status === "connecting" && <p className="mt-3 text-sm text-gray-400">Connecting to the phone service…</p>}
           {status === "error" && (
